@@ -2,7 +2,7 @@
 " CHANGE THIS TO YOUR PYTHON PROVIDER !!!
 " ===================================
 if has('win32') || has('win64')
-    let g:python3_host_prog='C:\Users\mperepichka\AppData\Local\miniconda3\python.exe'
+    let g:python3_host_prog='G:/conda/envs/research/python.exe'
 else
     let g:python3_host_prog='/home/mperepichka/miniconda3/envs/py38/bin/python'
 endif
@@ -130,7 +130,8 @@ Plug 'dstein64/vim-startuptime'
 
 " Color scheme
 "Plug 'overcache/NeoSolarized'
-Plug 'rebelot/kanagawa.nvim'
+"Plug 'rebelot/kanagawa.nvim'
+Plug 'catppuccin/nvim', { 'as': 'catppuccin' }
 
 " Patch font icons
 " Plug 'mortepau/codicons.nvim' Not sure what this actually does
@@ -170,13 +171,25 @@ Plug 'vim-airline/vim-airline-themes' " Airline themes
 ""Plug 'zchee/deoplete-jedi'
 "
 "" Jedi goto functionality
-""Plug 'davidhalter/jedi-vim'
+"Plug 'davidhalter/jedi-vim'
+"
+"
+
+" LSP
+Plug 'neovim/nvim-lspconfig'
+
+" Renaming
+Plug 'smjonas/inc-rename.nvim'
+
+
 "
 ""Plug 'donRaphaco/neotex' " neo tex latex auto preview
 "
 "" Fuzzy file search fzf
-""Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
-""Plug 'junegunn/fzf.vim'
+Plug 'junegunn/fzf', { 'dir': '~/.fzf', 'do': './install --all' }
+Plug 'ibhagwan/fzf-lua'
+
+
 "
 "" Neovim debugging
 ""Plug 'sakhnik/nvim-gdb', { 'do': ':!./install.sh' }
@@ -202,6 +215,12 @@ Plug 'github/copilot.vim'
 " Fuzzy finder
 Plug 'nvim-lua/plenary.nvim'
 Plug 'nvim-telescope/telescope.nvim', { 'tag': '0.1.8' }
+if has('win32') || has('win64')
+    Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'cmake -S. -Bbuild -DCMAKE_BUILD_TYPE=Release && cmake --build build --config Release' }
+else
+    Plug 'nvim-telescope/telescope-fzf-native.nvim', { 'do': 'make' }
+endif
+Plug 'nvim-telescope/telescope-file-browser.nvim'
 
 "  Nvim DAB (Python Debugger) Stuff
 Plug 'nvim-treesitter/nvim-treesitter', {'do': ':TSUpdate:'}
@@ -211,6 +230,10 @@ Plug 'mfussenegger/nvim-dap-python'
 Plug 'rcarriga/nvim-dap-ui'
 Plug 'nvim-neotest/nvim-nio'
 Plug 'theHamsta/nvim-dap-virtual-text'
+
+" Autosession
+Plug 'rmagatti/auto-session'
+
 
 
 "" Initialize plugin system
@@ -231,7 +254,8 @@ filetype plugin indent on
 " let g:neosolarized_visibility = "normal"
 " let g:neosolarized_vertplitBgTrans = 0
 
-colorscheme kanagawa-dragon
+"colorscheme kanagawa-dragon
+colorscheme catppuccin
 
 
 " Bunch of color hacks to make this work in WSL
@@ -262,7 +286,7 @@ let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#left_sep = ' '
 let g:airline#extensions#tabline#fnamemod = ':t'
 
-let g:airline_theme='solarized'
+"let g:airline_theme='solarized'
 
 " Replace tabs with buffers. Solution by Josh Davis
 set hidden
@@ -317,7 +341,18 @@ inoremap <expr><tab> pumvisible() ? "\<c-n>" : "\<tab>"
 
 " ===============  Neoformat Stuff =============== "
 " Set which linters to use
-let g:neoformat_enabled_python = ['black', 'ruff', 'isort']
+let g:neoformat_enabled_python = ['ruff', 'isort']
+
+let g:neoformat_python_ruff = {
+            \ 'exe': 'G:/conda/envs/research/Scripts/ruff.exe',
+            \ 'stdin': 1,
+            \ 'args': ['format', '-q', '-'],
+            \ }
+let g:neoformat_python_isort = {
+            \ 'exe': 'G:/conda/envs/research/Scripts/isort.exe',
+            \ 'stdin': 1,
+            \ 'args': ['--profile', 'black', '-'],
+            \ }
 
 " Run all linters
 let g:neoformat_run_all_formatters = 1
@@ -339,19 +374,25 @@ augroup END
 
 " ===============  Telescope stuff =============== "
 " Find files using Telescope command-line sugar.
-nnoremap <leader>ff <cmd>Telescope find_files<cr>
-nnoremap <leader>fg <cmd>Telescope live_grep<cr>
-nnoremap <leader>fb <cmd>Telescope buffers<cr>
-nnoremap <leader>fh <cmd>Telescope help_tags<cr>
+"nnoremap <leader>ff <cmd>Telescope find_files<cr>
+"nnoremap <leader>fg <cmd>Telescope live_grep<cr>
+"nnoremap <leader>fb <cmd>Telescope buffers<cr>
+"nnoremap <leader>fh <cmd>Telescope help_tags<cr>
 
 " Using Lua functions
 nnoremap <leader>ff <cmd>lua require('telescope.builtin').find_files()<cr>
 nnoremap <leader>fg <cmd>lua require('telescope.builtin').live_grep()<cr>
 nnoremap <leader>fb <cmd>lua require('telescope.builtin').buffers()<cr>
 nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
+nnoremap <leader>fh <cmd>lua require('telescope.builtin').help_tags()<cr>
+nnoremap <leader>fb <cmd>lua require('telescope').extensions.file_browser.file_browser()<cr>
 
 " ===============  DAP Debugger Stuff =============== "
 " Closing of DAP windows
 autocmd FileType dap-float nnoremap <buffer><silent> q <cmd>close!<CR>
 
-lua require('init')
+if has('win32') || has('win64')
+    " Find better windows soln
+else
+    lua require('init')
+    end
